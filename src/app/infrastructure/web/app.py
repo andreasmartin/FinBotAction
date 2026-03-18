@@ -1,0 +1,40 @@
+from fastapi import Depends, FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+
+from app.infrastructure.config import API_TITLE, API_VERSION, API_DESCRIPTION
+from app.infrastructure.database import get_db
+from app.infrastructure.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
+from app.application.issue_use_cases import IssueService
+from app.interfaces.api import issue_api
+
+
+def create_app(init_db: bool = True) -> FastAPI:
+    app = FastAPI(
+        title=API_TITLE,
+        version=API_VERSION,
+        description=API_DESCRIPTION,
+    )
+
+    def get_issue_service(db: Session = Depends(get_db)) -> IssueService:
+        repo = SQLAlchemyIssueRepository(db)
+        return IssueService(repo)
+
+    app.dependency_overrides[issue_api.get_service] = get_issue_service
+    app.include_router(issue_api.router)
+
+    @app.get("/health")
+    def health_check():
+        return {"status": "healthy"}
+
+    app.mount("/", StaticFiles(directory="src/app/infrastructure/web/static", html=True), name="ui")
+
+    if init_db:
+        from app.infrastructure.database import init_db as _init_db
+        _init_db()
+
+    return app
+
+
+app = create_app()
