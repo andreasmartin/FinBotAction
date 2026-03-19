@@ -9,6 +9,6 @@ if DATABASE_URL.startswith("postgres://"):
 elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-API_TITLE = "BAIssue API"
+API_TITLE = "FinBotAction API"
 API_VERSION = "1.0.0"
-API_DESCRIPTION = "A minimal FastAPI issue tracker demonstrating Clean Architecture"
+API_DESCRIPTION = "A FastAPI service for account record actions, built with Clean Architecture"

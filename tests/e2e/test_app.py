@@ -23,26 +23,34 @@ def client():
         yield c
 
 
-def test_create_issue(client):
-    r = client.post("/issues", json={"title": "E2E Issue"})
+def test_create_account_record(client):
+    r = client.post(
+        "/account-records",
+        json={
+            "KassierDate": "20.05.1980",
+            "KassierName": "Monika Meier",
+            "PraesidiumDate": "15.02.1980",
+            "PraesidiumName": "Hans Muster",
+            "VereinEmail": "info@shindokan.ch",
+        },
+    )
     assert r.status_code == 201
     data = r.json()
-    assert data["title"] == "E2E Issue"
-    assert data["status"] == "open"
+    assert "AntragsNr" in data
 
 
-def test_close_issue(client):
-    r = client.post("/issues", json={"title": "Closable"})
-    issue_id = r.json()["id"]
+def test_list_account_records_page(client):
+    client.post(
+        "/account-records",
+        data={
+            "KassierDate": "21.05.1980",
+            "KassierName": "Petra Baum",
+            "PraesidiumDate": "16.02.1980",
+            "PraesidiumName": "Paul Vogel",
+            "VereinEmail": "verein@example.ch",
+        },
+    )
 
-    r = client.patch(f"/issues/{issue_id}/close")
+    r = client.get("/")
     assert r.status_code == 200
-    assert r.json()["status"] == "closed"
-
-
-def test_delete_issue(client):
-    r = client.post("/issues", json={"title": "Delete me"})
-    issue_id = r.json()["id"]
-
-    r = client.delete(f"/issues/{issue_id}")
-    assert r.status_code == 204
+    assert "Petra Baum" in r.text

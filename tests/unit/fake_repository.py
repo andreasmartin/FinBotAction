@@ -1,39 +1,24 @@
-from typing import Dict, Optional
+from typing import Dict
 
-from app.domain.issue import Issue, IssueStatus
-from app.application.repositories.issue_repository import IssueRepository
+from app.domain.account_record import AccountRecord
+from app.application.repositories.account_record_repository import AccountRecordRepository
 
 
-class FakeIssueRepository(IssueRepository):
+class FakeAccountRecordRepository(AccountRecordRepository):
     def __init__(self):
-        self._storage: Dict[int, Issue] = {}
-        self._next_id = 1
+        self._storage: Dict[str, AccountRecord] = {}
 
-    def create(self, issue: Issue) -> Issue:
-        new_issue = Issue(
-            id=self._next_id,
-            title=issue.title,
-            body=issue.body,
-            status=issue.status,
-            created_at=issue.created_at,
-            updated_at=issue.updated_at,
+    def create(self, record: AccountRecord) -> AccountRecord:
+        new_record = AccountRecord(
+            antrags_nr=record.antrags_nr,
+            kassier_date=record.kassier_date,
+            kassier_name=record.kassier_name,
+            praesidium_date=record.praesidium_date,
+            praesidium_name=record.praesidium_name,
+            verein_email=record.verein_email,
         )
-        self._storage[self._next_id] = new_issue
-        self._next_id += 1
-        return new_issue
+        self._storage[new_record.antrags_nr] = new_record
+        return new_record
 
-    def get_by_id(self, issue_id: int) -> Optional[Issue]:
-        return self._storage.get(issue_id)
-
-    def list_all(self) -> list[Issue]:
+    def list_all(self) -> list[AccountRecord]:
         return list(self._storage.values())
-
-    def set_status(self, issue_id: int, status: IssueStatus) -> Optional[Issue]:
-        issue = self._storage.get(issue_id)
-        if issue is None:
-            return None
-        issue.status = status
-        return issue
-
-    def delete(self, issue_id: int) -> bool:
-        return self._storage.pop(issue_id, None) is not None

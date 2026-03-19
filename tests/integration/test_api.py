@@ -47,75 +47,75 @@ def test_health_check(client):
     assert r.json() == {"status": "healthy"}
 
 
-def test_create_issue(client):
-    r = client.post("/issues", json={"title": "Test Issue", "body": "Test body"})
+def test_create_account_record_json(client):
+    r = client.post(
+        "/account-records",
+        json={
+            "KassierDate": "20.05.1980",
+            "KassierName": "Monika Meier",
+            "PraesidiumDate": "15.02.1980",
+            "PraesidiumName": "Hans Muster",
+            "VereinEmail": "info@shindokan.ch",
+        },
+    )
     assert r.status_code == 201
     data = r.json()
-    assert data["title"] == "Test Issue"
-    assert data["body"] == "Test body"
-    assert "id" in data
+    assert "AntragsNr" in data
+    assert len(data["AntragsNr"]) == 12
 
 
-def test_create_issue_without_body(client):
-    r = client.post("/issues", json={"title": "Test Issue"})
+def test_create_account_record_form(client):
+    r = client.post(
+        "/account-records",
+        data={
+            "KassierDate": "21.05.1980",
+            "KassierName": "Petra Baum",
+            "PraesidiumDate": "16.02.1980",
+            "PraesidiumName": "Paul Vogel",
+            "VereinEmail": "verein@example.ch",
+        },
+    )
     assert r.status_code == 201
-    assert r.json()["body"] is None
+    assert "AntragsNr" in r.json()
 
 
-def test_create_issue_with_empty_title(client):
-    r = client.post("/issues", json={"title": "", "body": "x"})
+def test_create_account_record_missing_required_field(client):
+    r = client.post(
+        "/account-records",
+        json={
+            "KassierDate": "20.05.1980",
+            "KassierName": "Monika Meier",
+            "PraesidiumDate": "15.02.1980",
+            "PraesidiumName": "Hans Muster",
+        },
+    )
     assert r.status_code == 400
 
 
-def test_list_issues_empty(client):
-    r = client.get("/issues")
+def test_root_html_lists_submitted_records(client):
+    client.post(
+        "/account-records",
+        json={
+            "KassierDate": "20.05.1980",
+            "KassierName": "Monika Meier",
+            "PraesidiumDate": "15.02.1980",
+            "PraesidiumName": "Hans Muster",
+            "VereinEmail": "info@shindokan.ch",
+        },
+    )
+    client.post(
+        "/account-records",
+        data={
+            "KassierDate": "21.05.1980",
+            "KassierName": "Petra Baum",
+            "PraesidiumDate": "16.02.1980",
+            "PraesidiumName": "Paul Vogel",
+            "VereinEmail": "verein@example.ch",
+        },
+    )
+
+    r = client.get("/")
     assert r.status_code == 200
-    assert r.json() == []
-
-
-def test_list_issues(client):
-    client.post("/issues", json={"title": "Issue 1", "body": "Body 1"})
-    client.post("/issues", json={"title": "Issue 2", "body": "Body 2"})
-
-    r = client.get("/issues")
-    assert r.status_code == 200
-    data = r.json()
-    assert len(data) == 2
-    assert data[0]["title"] == "Issue 1"
-    assert data[1]["title"] == "Issue 2"
-
-
-def test_get_issue(client):
-    created = client.post("/issues", json={"title": "Test Issue", "body": "Test body"}).json()
-    issue_id = created["id"]
-
-    r = client.get(f"/issues/{issue_id}")
-    assert r.status_code == 200
-    assert r.json()["id"] == issue_id
-
-
-def test_get_issue_not_found(client):
-    r = client.get("/issues/999")
-    assert r.status_code == 404
-
-
-def test_close_and_reopen_issue(client):
-    created = client.post("/issues", json={"title": "Test"}).json()
-    issue_id = created["id"]
-
-    closed = client.patch(f"/issues/{issue_id}/close").json()
-    assert closed["status"] == "closed"
-
-    reopened = client.patch(f"/issues/{issue_id}/reopen").json()
-    assert reopened["status"] == "open"
-
-
-def test_delete_issue(client):
-    created = client.post("/issues", json={"title": "Test"}).json()
-    issue_id = created["id"]
-
-    r = client.delete(f"/issues/{issue_id}")
-    assert r.status_code == 204
-
-    r = client.get(f"/issues/{issue_id}")
-    assert r.status_code == 404
+    assert "text/html" in r.headers["content-type"]
+    assert "Monika Meier" in r.text
+    assert "Petra Baum" in r.text

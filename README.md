@@ -1,10 +1,18 @@
-# BAIssue
+# FinBotAction
 
-A minimal **FastAPI** issue tracker (Business AI wordplay) demonstrating **Clean Architecture** with **SQLite** (development & CI) and **PostgreSQL** (production) support.
+A minimal **FastAPI** application being adapted from the original BAIssue project using **Clean Architecture** with **SQLite** (development & CI) and **PostgreSQL** (production) support.
 
 ## What is this?
 
-**BAIssue** is a small REST API for managing issues (a minimal subset of GitHub Issues). It is designed primarily for **education** and demonstrates:
+**FinBotAction** is currently in migration from BAIssue to a finance-focused action service.
+The high-level target scope is:
+
+- accept POST requests to store account records
+- return an ID after creation
+- provide a simple HTML page listing entries
+
+Detailed behavior will be defined in the upcoming use-case specification.  
+The existing codebase continues to demonstrate:
 
 - Clean Architecture terminology and layering
 - Clear separation of concerns
@@ -256,13 +264,19 @@ Follow AGENTS.md.
 Execute phase 0 BOOTSTRAP.
 
 System:
-Extend the existing BAIssue issue tracker.
+Transform the existing BAIssue project into a FastAPI application "FinBotAction".
+
+High-level scope:
+- Accept POST requests to store account records in a database
+- Return an ID after creation
+- Provide a simple HTML page listing all entries
+
+Details will be specified later in a use case.
 
 Constraints:
 - Prefer adapting existing structure and files
 - Do not create unnecessary files
-- Ask before removing anything
-- Keep all artifacts minimal
+- Remove unnecessary files
 
 Use skill: ai-sdlc-0-bootstrap
 ```
@@ -275,9 +289,31 @@ Follow AGENTS.md.
 Execute phase 1 SPECIFY.
 
 User story:
-Users can add comments to an issue via the REST API and web app. 
-A comment contains text, author name, and timestamp. 
-Users can list comments for an issue.
+Users can submit an account record via a REST API using POST data.
+The system stores the record and returns a generated ID (AntragsNr).
+
+The system accepts:
+
+{
+  "KassierDate": "20.05.1980",
+  "KassierName": "Monika Meier",
+  "PraesidiumDate": "15.02.1980",
+  "PraesidiumName": "Hans Muster",
+  "VereinEmail": "info@shindokan.ch"
+}
+
+The system returns:
+
+{
+  "AntragsNr": "a0ba8e16ef8f"
+}
+
+Users can view all submitted records in a simple HTML list.
+
+Constraints:
+- Do not invent additional fields or behaviour
+- Keep the use case minimal
+- Ask if something is unclear
 
 Use skill: ai-sdlc-1-specify
 ```

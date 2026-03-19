@@ -3,5 +3,6 @@ uvicorn[standard]
 SQLAlchemy>=2.0
 psycopg[binary]
 python-dotenv
+python-multipart
 pytest
 httpx
